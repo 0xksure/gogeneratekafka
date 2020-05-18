@@ -1,7 +1,29 @@
 version: '3.2'
 
 services:
-  zoo1:
+  postgres1:
+    image: postgres
+    hostname: postgres1
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: db1
+
+  postgres2:
+    image: postgres
+    restart: always
+    hostname: postgres2
+    ports:
+      - 2345:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: db1
+
+  zookeeper:
     image: zookeeper
     restart: 'no'
     hostname: zoo1
@@ -9,43 +31,55 @@ services:
       - 2181:2181
     environment:
       ZOO_MY_ID: 1
-      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181  
-        
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181
+
   kafka1:
     image: wurstmeister/kafka
-    restart: "no"
+    hostname: kafka1
+    restart: 'no'
     ports:
       - '9093:9093'
     environment:
       KAFKA_LISTENERS: INSIDE://kafka1:9092,OUTSIDE://kafka1:9093
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka1:9092,OUTSIDE://127.0.0.1:9093
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka1:9092,OUTSIDE://172.17.0.1:9093
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_LOG_RETENTION_HOURS: "168"
-      KAFKA_LOG_RETENTION_BYTES: "100000000"
-      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181
+      KAFKA_LOG_RETENTION_HOURS: '168'
+      KAFKA_LOG_RETENTION_BYTES: '100000000'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CREATE_TOPICS: 'Topic1:1:1'
       KAFKA_BROKER_ID: 1
     depends_on:
-      - zoo1
+      - zookeeper
     volumes:
       - ./kafka/broker1/kafka-logs:/kafka
-    
+
   kafka2:
     image: wurstmeister/kafka
-    restart: "no"
+    hsotname: kafka2
+    restart: 'no'
     ports:
       - '9094:9094'
     environment:
       KAFKA_LISTENERS: INSIDE://kafka2:9092,OUTSIDE://kafka2:9094
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka2:9092,OUTSIDE://127.0.0.1:9094
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka2:9092,OUTSIDE://172.17.0.1:9094
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_LOG_RETENTION_HOURS: "168"
-      KAFKA_LOG_RETENTION_BYTES: "100000000"
-      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181
+      KAFKA_LOG_RETENTION_HOURS: '168'
+      KAFKA_LOG_RETENTION_BYTES: '100000000'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_BROKER_ID: 2
     depends_on:
-      - zoo1
+      - zookeeper
     volumes:
-      - ./kafka/broker2/kafka-logs:/kafka
+      - ./kafka/broker2/kafka-logs:/kafka'
+
+  connect:
+
+  ksqldb-server:
+    image: confluentinc/cp-ksqldb-server:5.5.0
+    hostname: ksqldb-server
+    container_name: ksqldb-server
+    depends_on:
+      - kafka1
+      - kafka2

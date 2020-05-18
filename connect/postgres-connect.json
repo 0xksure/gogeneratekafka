@@ -1,0 +1,8 @@
+#https: //github.com/confluentinc/kafka-workshop/blob/master/connect/postgres-source.json
+#https: //blog.softwaremill.com/do-not-reinvent-the-wheel-use-kafka-connect-4bcabb143292
+{
+    "name":"postgres",
+    "config": {
+        "connector.class":"io.confuelt"
+    }
+}

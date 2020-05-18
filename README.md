@@ -11,8 +11,10 @@ My purpose is simple - produce data and store it in a kafka topic
 
 Download Kafkacat
 
-> kafkacat -C -b localhost:9093,localhost:9092 -t Topic1 -p 0
+### Publish message to topic
 
-### Publish message to partition
+> kafkacat -b localhost:9093,localhost:9093 -t Topic1 -P
 
-> echo 'publish to partition 0' | kafkacat -P -b localhost:9093,localhost:9092 -t Topic1 -p 0
+### Consume message from topic
+
+> kafkacat -b localhost:9093,localhost:9093 -t Topic1 -C
