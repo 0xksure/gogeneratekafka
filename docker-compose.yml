@@ -9,57 +9,43 @@ services:
       - 2181:2181
     environment:
       ZOO_MY_ID: 1
-      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181
-
-  zoo2:
-    image: zookeeper
-    restart: 'no'
-    hostname: zoo2
-    ports:
-      - 2182:2181
-    environment:
-      ZOO_MY_ID: 2
-      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181
-
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181  
+        
   kafka1:
     image: wurstmeister/kafka
-    restart: 'no'
+    restart: "no"
     ports:
-      - '9094:9092'
+      - '9093:9093'
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: 172.17.0.1
-      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2182
-      KAFKA_ADVERTISED_PORT: 9094
-      KAFKA_BROKER_ID: 500
+      KAFKA_LISTENERS: INSIDE://kafka1:9092,OUTSIDE://kafka1:9093
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka1:9092,OUTSIDE://127.0.0.1:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LOG_RETENTION_HOURS: "168"
+      KAFKA_LOG_RETENTION_BYTES: "100000000"
+      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181
       KAFKA_CREATE_TOPICS: 'Topic1:1:1'
-      KAFKA_LISTENERS: INTERNAL://kafka1:9092,OUTSIDE://:9094
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:9092,OUTSIDE://localhost:9094
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_BROKER_ID: 1
     depends_on:
       - zoo1
-      - zoo2
     volumes:
       - ./kafka/broker1/kafka-logs:/kafka
-/*
+    
   kafka2:
     image: wurstmeister/kafka
-    restart: 'no'
+    restart: "no"
     ports:
-      - '9093:9092'
+      - '9094:9094'
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: 172.17.0.1
-      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2182
-      KAFKA_ADVERTISED_PORT: 9093
-      KAFKA_BROKER_ID: 501
-      KAFKA_CREATE_TOPICS: 'Topic2:1:1'
-      KAFKA_LISTENERS: INTERNAL://kafka2:9092,OUTSIDE://:9093
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka2:9092,OUTSIDE://localhost:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: INSIDE://kafka2:9092,OUTSIDE://kafka2:9094
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka2:9092,OUTSIDE://127.0.0.1:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LOG_RETENTION_HOURS: "168"
+      KAFKA_LOG_RETENTION_BYTES: "100000000"
+      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181
+      KAFKA_BROKER_ID: 2
     depends_on:
       - zoo1
-      - zoo2
     volumes:
       - ./kafka/broker2/kafka-logs:/kafka
-*/
